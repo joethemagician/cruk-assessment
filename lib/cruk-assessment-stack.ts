@@ -1,19 +1,22 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 
 export class CrukAssessmentStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'CrukAssessmentQueue', {
-      visibilityTimeout: Duration.seconds(300)
+    const users = new lambda.Function(this, 'UsersHandler', {
+      runtime: lambda.Runtime.NODEJS_14_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'uesrs.handler'
     });
 
-    const topic = new sns.Topic(this, 'CrukAssessmentTopic');
+    const donations = new lambda.Function(this, 'DonationsHandler', {
+      runtime: lambda.Runtime.NODEJS_14_X,
+      code: lambda.Code.fromAsset('lambda'),
+      handler: 'donations.handler'
+    });
 
-    topic.addSubscription(new subs.SqsSubscription(queue));
   }
 }
