@@ -10,6 +10,7 @@ export class CrukAssessmentStack extends Stack {
     private donationTable: Table;
     private usersLambda: Function;
     private donationsLambda: Function;
+    private usersIndexLambda: Function;
     private api: RestApi;
 
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -59,6 +60,12 @@ export class CrukAssessmentStack extends Stack {
             runtime: Runtime.NODEJS_14_X
         });
 
+        this.usersIndexLambda = new Function(this, 'User-Index-Lambda', {
+            code: Code.fromAsset('lambda/users'),
+            handler: "index.handler",
+            runtime: Runtime.NODEJS_14_X
+        });
+
         //Required permissions for Lambda function to interact with User table
         const tablePermissionPolicy = new PolicyStatement({
             actions: [
@@ -77,6 +84,12 @@ export class CrukAssessmentStack extends Stack {
         //Attaching an inline policy to the role
         this.usersLambda.role?.attachInlinePolicy(
             new Policy(this, `UserTablePermissions`, {
+                statements: [tablePermissionPolicy],
+            }),
+        );
+        //Attaching an inline policy to the role
+        this.usersIndexLambda.role?.attachInlinePolicy(
+            new Policy(this, `UsersIndexTablePermissions`, {
                 statements: [tablePermissionPolicy],
             }),
         );
@@ -121,7 +134,7 @@ export class CrukAssessmentStack extends Stack {
         const donations = this.api.root.addResource('donations');
         const donation = donations.addResource('{id}');
 
-        users.addMethod('GET', new LambdaIntegration(this.usersLambda));
+        users.addMethod('GET', new LambdaIntegration(this.usersIndexLambda));
         users.addMethod('PUT', new LambdaIntegration(this.usersLambda));
         user.addMethod('GET', new LambdaIntegration(this.usersLambda));
         user.addMethod('DELETE', new LambdaIntegration(this.usersLambda));
