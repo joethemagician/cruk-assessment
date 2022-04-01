@@ -1,3 +1,4 @@
+export {}
 const aws = require('aws-sdk');
 const getUsers = require( '../../lambda/users/list' ).handler;
 const fetchUser = require( '../../lambda/users/fetch' ).handler;
