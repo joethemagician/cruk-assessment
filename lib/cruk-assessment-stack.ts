@@ -3,6 +3,7 @@ import {Construct} from 'constructs';
 import {AttributeType, ProjectionType, Table} from "aws-cdk-lib/aws-dynamodb";
 import {Code, Function, Runtime} from "aws-cdk-lib/aws-lambda";
 import {LambdaIntegration, RestApi} from "aws-cdk-lib/aws-apigateway";
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 export class CrukAssessmentStack extends Stack {
     private donationTable: Table;
@@ -51,6 +52,12 @@ export class CrukAssessmentStack extends Stack {
             runtime: Runtime.NODEJS_14_X
         });
 
+        this.donationsCreateLambda.addToRolePolicy(new PolicyStatement({
+            actions: ['ses:SendEmail', 'SES:SendRawEmail'],
+            resources: ['*'],
+            effect: Effect.ALLOW,
+          }));
+
         this.donationTable.grantReadWriteData(this.donationsCreateLambda);
                 
     }
@@ -83,7 +90,6 @@ export class CrukAssessmentStack extends Stack {
 
     private addApiResources = () => {
         const donations = this.api.root.addResource('donations');
-        // const donation = donations.addResource('{id}');
 
         donations.addMethod('POST', new LambdaIntegration(this.donationsCreateLambda));
     }

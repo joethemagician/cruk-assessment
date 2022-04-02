@@ -51,13 +51,18 @@ exports.handler = async (event, context) => {
                 Message: {
                   Body: {
                     Text: { Data: "Test" },
-                  },
-            
+                  },            
                   Subject: { Data: "Test Email" },
                 },
                 Source: "test@test.com",
-              };             
-              return ses.sendEmail(params).promise()
+              };   
+              
+             try {
+                await ses.sendEmail(params).promise(); 
+             } catch (e) { 
+                console.error('error sending email') 
+             }
+
         }
 
     } catch (err) {
