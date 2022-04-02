@@ -1,7 +1,8 @@
 const AWS = require("aws-sdk");
-const crypto = require('crypto');
+const crypto = require("crypto");
 
 const db = new AWS.DynamoDB.DocumentClient();
+const ses = new AWS.SES({"region": "eu-west-1"});
 
 exports.handler = async (event, context) => {
     
@@ -33,18 +34,31 @@ exports.handler = async (event, context) => {
             FilterExpression: 'email = :email',
             ExpressionAttributeValues: { ':email': requestJSON.email} 
         }
-        console.log(params);
-        await db.scan(params, function(err, data) {
+        const scanResponse = await db.scan(params, function(err, data) {
+            console.log(data);
             if (err) {
                 console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
-            } else {
-                console.log(data);
-                if(data.Count >= 2){
-                    console.log('Thanks!!!!');
-                }
             }
         }).promise();
-    
+
+        console.log(scanResponse);
+
+        if(scanResponse.Count >= 2){
+            let params = {
+                Destination: {
+                  ToAddresses: [requestJSON.email],
+                },
+                Message: {
+                  Body: {
+                    Text: { Data: "Test" },
+                  },
+            
+                  Subject: { Data: "Test Email" },
+                },
+                Source: "test@test.com",
+              };             
+              return ses.sendEmail(params).promise()
+        }
 
     } catch (err) {
         console.log(err)

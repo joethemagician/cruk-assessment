@@ -7,11 +7,12 @@ const dummyDonation = {
     "email": "test.donation@test.com",
     "amount": 1000
 };
-let numberOfDonations = 1;
+const numberOfDonations = 2;
 
 jest.spyOn(crypto, 'randomUUID').mockReturnValue('32d7e58f-2e09-4982-b1bd-3d2f9316af27');
 
 jest.mock('aws-sdk', () => {
+    // dynamoDB
     const mDocumentClient = { 
         put: jest.fn().mockImplementation(() => {
             return {
@@ -29,7 +30,14 @@ jest.mock('aws-sdk', () => {
         })
     };
     const mDynamoDB = { DocumentClient: jest.fn(() => mDocumentClient) };
-    return { DynamoDB: mDynamoDB };
+
+    // SES
+    const mSES = {
+      sendEmail: jest.fn().mockReturnThis(),
+      promise: jest.fn(),
+    };
+
+    return { DynamoDB: mDynamoDB, SES: jest.fn(() => mSES) };
 });
 
 const mDynamoDb = new aws.DynamoDB.DocumentClient();
@@ -39,7 +47,7 @@ describe('Test create donation', () => {
       jest.resetAllMocks();
     });
 
-    it('should create donation', async () => {
+    it('should create donation and send notification', async () => {
         const response = await createDonation({ "body": JSON.stringify(dummyDonation)});
         expect(mDynamoDb.put).toBeCalledWith({
             TableName: 'Donations',
@@ -55,6 +63,9 @@ describe('Test create donation', () => {
             FilterExpression: 'email = :email',
             ExpressionAttributeValues: { ':email': dummyDonation.email }
           }, expect.any(Function));
+
+        console.log(response);
+
         expect(response.body).toEqual(`\"Put item 32d7e58f-2e09-4982-b1bd-3d2f9316af27\"`);
     });
    

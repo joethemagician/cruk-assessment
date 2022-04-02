@@ -5,12 +5,7 @@ import {Code, Function, Runtime} from "aws-cdk-lib/aws-lambda";
 import {LambdaIntegration, RestApi} from "aws-cdk-lib/aws-apigateway";
 
 export class CrukAssessmentStack extends Stack {
-    private userTable: Table;
     private donationTable: Table;
-    private usersListLambda: Function;
-    private usersFetchLambda: Function;
-    private usersUpdateLambda: Function;
-    private usersDeleteLambda: Function;
     private donationsCreateLambda: Function;
     private api: RestApi;
 
@@ -25,7 +20,7 @@ export class CrukAssessmentStack extends Stack {
     }
 
     /*
-        Creating a DynamoDB table for storing User data
+        Creating a DynamoDB table for storing Donation data
      */
     private createTables = () => {
         this.donationTable = new Table(this, 'DonationsTable', {
