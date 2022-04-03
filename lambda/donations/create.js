@@ -50,7 +50,7 @@ exports.handler = async (event, context) => {
                 },
                 Message: {
                   Body: {
-                    Text: { Data: "Thanks you!" },
+                    Text: { Data: "Thank you for making more than one donation!" },
                   },            
                   Subject: { Data: "Thank you for generously donating more than once!" },
                 },
