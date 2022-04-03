@@ -7,8 +7,11 @@ const dummyDonation = {
     "email": "test.donation@test.com",
     "amount": 1000
 };
+const dummyId = '32d7e58f-2e09-4982-b1bd-3d2f9316af27';
 
-jest.spyOn(crypto, 'randomUUID').mockReturnValue('32d7e58f-2e09-4982-b1bd-3d2f9316af27');
+process.env.FROM_EMAIL = 'test@test.com';
+
+jest.spyOn(crypto, 'randomUUID').mockReturnValue(dummyId);
 
 jest.mock('aws-sdk', () => {
     // dynamoDB
@@ -16,14 +19,14 @@ jest.mock('aws-sdk', () => {
         put: jest.fn().mockImplementation(() => {
             return {
               promise() {
-                return `Put item 32d7e58f-2e09-4982-b1bd-3d2f9316af27`
+                return `Put item ${dummyId}`
               }
             };
         }),
         scan: jest.fn().mockImplementation(() => {
             return {
               promise() {
-                return { Count: 2 } 
+                return { Count: 1 } 
               }
             };
         })
@@ -47,7 +50,7 @@ describe('Test create donation(s)', () => {
       jest.resetAllMocks();
     });
 
-    it('should create second or more donations and send notification', async () => {             
+    it('should create the first donation per user and not send an email', async () => {             
 
         const response = await createDonation({ "body": JSON.stringify(dummyDonation)});
 
@@ -55,7 +58,7 @@ describe('Test create donation(s)', () => {
         expect(mDynamoDb.put).toBeCalledWith({
             TableName: 'Donations',
             Item: {
-                id: '32d7e58f-2e09-4982-b1bd-3d2f9316af27',
+                id: dummyId,
                 email: dummyDonation.email,
                 amount: 1000
             }
@@ -66,10 +69,10 @@ describe('Test create donation(s)', () => {
             FilterExpression: 'email = :email',
             ExpressionAttributeValues: { ':email': dummyDonation.email }
           }, expect.any(Function));
-        expect(response.body).toEqual(`\"Put item 32d7e58f-2e09-4982-b1bd-3d2f9316af27\"`);
+        expect(response.body).toEqual(`{\"message\":\"Put item ${dummyId}\"}`);
 
         // send email
-        expect(mSES.sendEmail).toBeCalled();
+        expect(mSES.sendEmail).not.toBeCalled();
     });
    
 });

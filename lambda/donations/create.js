@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
                     amount: requestJSON.amount
                 }
             }).promise();
-        body = `Put item ${uuid}`;
+        body = { "message": `Put item ${uuid}`};
 
         // check if second or later donation
         let params = {
@@ -50,11 +50,11 @@ exports.handler = async (event, context) => {
                 },
                 Message: {
                   Body: {
-                    Text: { Data: "Test" },
+                    Text: { Data: "Thanks you!" },
                   },            
-                  Subject: { Data: "Test Email" },
+                  Subject: { Data: "Thank you for generously donating more than once!" },
                 },
-                Source: "test@test.com",
+                Source: process.env.FROM_EMAIL,
               };   
               
              try {
