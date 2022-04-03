@@ -112,4 +112,4 @@ readScaling.scaleOnSchedule('ScaleDownAtNight', {
 
 ### Email / SES
 
-As mentioned above the SES would need to be taken out of sandbox mode. I may also be necessary to request an extension of the 24hr sending quota depending on need (the current value for this can be checked in the AWS console).
+As mentioned above the SES would need to be taken out of sandbox mode. It may also be necessary to request an extension of the 24hr sending quota depending on need (the current value for this can be checked in the AWS console).
